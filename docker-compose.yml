@@ -1,0 +1,50 @@
+version: "3.9"
+
+services:
+
+  # ── PostgreSQL Database ─────────────────────────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    container_name: champ_db
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB:       champ_db
+      POSTGRES_USER:     champ_user
+      POSTGRES_PASSWORD: champ_pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U champ_user -d champ_db"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  # ── Flask API ───────────────────────────────────────────────────────────────
+  api:
+    build: .
+    container_name: champ_api
+    restart: unless-stopped
+    ports:
+      - "5000:5000"
+    environment:
+      DB_HOST:        postgres
+      DB_PORT:        "5432"
+      DB_NAME:        champ_db
+      DB_USER:        champ_user
+      DB_PASSWORD:    champ_pass
+      SECRET_KEY:     change-this-in-production
+      FLASK_DEBUG:    "false"
+      PORT:           "5000"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - .:/app
+    working_dir: /app
+    command: python app.py
+
+volumes:
+  postgres_data:
