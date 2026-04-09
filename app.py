@@ -1403,20 +1403,28 @@ async function loadOptimization() {
     const d = await r.json();
     
     container.innerHTML = `
+      <div style="grid-column: 1 / -1; margin-bottom: 10px; display: flex; align-items: center; gap: 8px;">
+        <span class="tag tag-success" style="font-size: 10px;">● LIVE HARDWARE DATA</span>
+        <span style="font-size: 11px; color: var(--muted); font-family: 'Space Mono', monospace;">Target: <300ms</span>
+      </div>
       <div class="card" style="background:var(--bg)">
         <div class="tag tag-argon" style="margin-bottom:10px">Argon2id Optimized</div>
         <div style="font-family:'Space Mono',monospace; font-size:13px; line-height:1.8;">
-          Time Cost: ${d.argon2id.time_cost}<br>
-          Memory Cost: ${d.argon2id.memory_cost} KB<br>
-          Parallelism: ${d.argon2id.parallelism}
+          Time Cost: ${d.argon2id_recommended.config.time_cost}<br>
+          Memory Cost: ${d.argon2id_recommended.config.memory_cost} KB<br>
+          Parallelism: ${d.argon2id_recommended.config.parallelism}<br>
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 8px 0;">
+          <span style="color:var(--green)">Measured Latency: ${Math.round(d.argon2id_recommended.avg_ms)}ms</span>
         </div>
       </div>
       <div class="card" style="background:var(--bg)">
         <div class="tag tag-scrypt" style="margin-bottom:10px">scrypt Optimized</div>
         <div style="font-family:'Space Mono',monospace; font-size:13px; line-height:1.8;">
-          n: ${d.scrypt.n}<br>
-          r: ${d.scrypt.r}<br>
-          p: ${d.scrypt.p}
+          n: ${d.scrypt_recommended.config.n}<br>
+          r: ${d.scrypt_recommended.config.r}<br>
+          p: ${d.scrypt_recommended.config.p}<br>
+          <hr style="border: 0; border-top: 1px solid var(--border); margin: 8px 0;">
+          <span style="color:var(--green)">Measured Latency: ${Math.round(d.scrypt_recommended.avg_ms)}ms</span>
         </div>
       </div>
     `;
@@ -1623,4 +1631,4 @@ def index():
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))
     print(f"\n  🔐 CHAMP v2 running → http://localhost:{port}\n")
-    app.run(host="0.0.0.0", port=port, debug=False)
+    app.run(host="0.0.0.0", port=port, debug=True)

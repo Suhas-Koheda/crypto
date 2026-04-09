@@ -5,7 +5,7 @@
       "memory_cost": 131072,
       "parallelism": 2
     },
-    "avg_ms": 161.93529699994542,
+    "avg_ms": 141.10342299827607,
     "memory_mb": 128
   },
   "scrypt_recommended": {
@@ -14,7 +14,7 @@
       "r": 8,
       "p": 1
     },
-    "avg_ms": 251.18486950032093,
+    "avg_ms": 181.30386150005506,
     "memory_mb": 32
   },
   "target_max_ms": 300,
