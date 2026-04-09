@@ -56,6 +56,21 @@ CREATE INDEX idx_attempts_user     ON login_attempts(user_id);
 CREATE INDEX idx_attempts_time     ON login_attempts(attempted_at);
 CREATE INDEX idx_benchmark_algo    ON benchmark_results(algorithm);
 
+-- ── Attack results table ──────────────────────────────────────
+CREATE TABLE attack_results (
+    id              SERIAL PRIMARY KEY,
+    algorithm       VARCHAR(20) NOT NULL,
+    preset          VARCHAR(20),
+    hps             NUMERIC(15, 2),
+    attempts        BIGINT,
+    duration        NUMERIC(10, 2),
+    cost_ratio      NUMERIC(10, 2),
+    is_real_hashcat BOOLEAN DEFAULT FALSE,
+    recorded_at     TIMESTAMP WITH TIME ZONE DEFAULT NOW()
+);
+
+CREATE INDEX idx_attack_algo       ON attack_results(algorithm);
+
 -- ── Auto-update updated_at trigger ───────────────────────────
 CREATE OR REPLACE FUNCTION update_updated_at()
 RETURNS TRIGGER AS $$

@@ -7,6 +7,9 @@ import os
 import psycopg2
 from psycopg2 import pool
 from contextlib import contextmanager
+from dotenv import load_dotenv
+
+load_dotenv() # Load variables from .env if it exists
 
 # ── Config from environment variables (set in .env or docker-compose) ──────────
 DB_CONFIG = {
@@ -120,6 +123,18 @@ def save_benchmark(result: dict):
                 result.get("iterations"),
                 result.get("notes"),
             ))
+
+
+def save_attack_result(algorithm: str, preset: str, hps: float, attempts: int, 
+                       duration: float, cost_ratio: float, is_hashcat: bool = False):
+    """Persist an attack simulation result to the database."""
+    sql = """
+        INSERT INTO attack_results (algorithm, preset, hps, attempts, duration, cost_ratio, is_real_hashcat)
+        VALUES (%s, %s, %s, %s, %s, %s, %s);
+    """
+    with get_connection() as conn:
+        with conn.cursor() as cur:
+            cur.execute(sql, (algorithm, preset, hps, attempts, duration, cost_ratio, is_hashcat))
 
 
 def init_db():

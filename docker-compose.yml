@@ -1,5 +1,3 @@
-version: "3.9"
-
 services:
 
   # ── PostgreSQL Database ─────────────────────────────────────────────────────
@@ -12,7 +10,7 @@ services:
       POSTGRES_USER:     champ_user
       POSTGRES_PASSWORD: champ_pass
     ports:
-      - "5433:5432"
+      - "5434:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./db/schema.sql:/docker-entrypoint-initdb.d/01_schema.sql
@@ -45,6 +43,10 @@ services:
       - .:/app
     working_dir: /app
     command: python app.py
+    deploy:
+      resources:
+        limits:
+          memory: 4g
 
 volumes:
   postgres_data:

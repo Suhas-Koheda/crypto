@@ -44,15 +44,18 @@ def hash_password(password: str, preset: str = "medium", **kwargs) -> str:
     """
     params = kwargs if kwargs else PRESETS[preset]
     salt = os.urandom(SALT_SIZE)
-    dk = hashlib.scrypt(
-        password.encode("utf-8"),
-        salt=salt,
-        n=params["n"],
-        r=params["r"],
-        p=params["p"],
-        dklen=KEY_LEN,
-        maxmem=0x7fffffff,
-    )
+    try:
+        dk = hashlib.scrypt(
+            password.encode("utf-8"),
+            salt=salt,
+            n=params["n"],
+            r=params["r"],
+            p=params["p"],
+            dklen=KEY_LEN,
+            maxmem=0x7fffffff,
+        )
+    except (ValueError, MemoryError):
+        return "Skipped due to memory constraints"
     # Store: preset$salt_hex$dk_hex  so we can re-derive with same params
     preset_label = preset if not kwargs else "custom"
     return f"{preset_label}{SEPARATOR}{salt.hex()}{SEPARATOR}{dk.hex()}"
@@ -64,6 +67,8 @@ def verify_password(password: str, stored: str, **kwargs) -> bool:
     Automatically detects preset from stored hash.
     Returns True if match, False otherwise.
     """
+    if "Skipped" in stored:
+        return False
     try:
         parts = stored.split(SEPARATOR)
         if len(parts) != 3:
@@ -89,6 +94,8 @@ def verify_password(password: str, stored: str, **kwargs) -> bool:
         )
         # Constant-time comparison to prevent timing attacks
         return hmac_compare(dk.hex(), dk_hex)
+    except (ValueError, MemoryError):
+        return False
     except Exception:
         return False
 
