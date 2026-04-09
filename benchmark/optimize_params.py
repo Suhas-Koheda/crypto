@@ -105,17 +105,17 @@ def sweep_scrypt():
         print(f"  Testing {label}...", end="", flush=True)
 
         # Wrap scrypt to accept **kwargs
-        def _hash(p, **kw):
+        def _hash(password, **kw):
             import hashlib, os as _os
             salt = _os.urandom(32)
-            dk = hashlib.scrypt(p.encode(), salt=salt, **kw, dklen=64)
+            dk = hashlib.scrypt(password.encode(), salt=salt, **kw, dklen=64, maxmem=0x7fffffff)
             return salt.hex() + "$" + dk.hex()
 
-        def _verify(p, stored, **kw):
+        def _verify(password, stored, **kw):
             import hashlib, hmac
             salt_hex, dk_hex = stored.split("$")
             salt = bytes.fromhex(salt_hex)
-            dk = hashlib.scrypt(p.encode(), salt=salt, **kw, dklen=64)
+            dk = hashlib.scrypt(password.encode(), salt=salt, **kw, dklen=64, maxmem=0x7fffffff)
             return hmac.compare_digest(dk.hex(), dk_hex)
 
         try:

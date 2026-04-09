@@ -1,0 +1,22 @@
+{
+  "argon2id_recommended": {
+    "config": {
+      "time_cost": 1,
+      "memory_cost": 131072,
+      "parallelism": 2
+    },
+    "avg_ms": 161.93529699994542,
+    "memory_mb": 128
+  },
+  "scrypt_recommended": {
+    "config": {
+      "n": 32768,
+      "r": 8,
+      "p": 1
+    },
+    "avg_ms": 251.18486950032093,
+    "memory_mb": 32
+  },
+  "target_max_ms": 300,
+  "note": "Run on your production hardware for accurate results."
+}

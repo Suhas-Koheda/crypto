@@ -1,0 +1,4 @@
+algorithm,latency_ms,memory_mb,hps_sim,cost_ratio_vs_bcrypt12
+bcrypt-12,475.6,0.004,3.00,1.00
+argon2id-opt,161.9,128.0,10.33,10.5
+scrypt-opt,251.2,32.0,11.28,4.2

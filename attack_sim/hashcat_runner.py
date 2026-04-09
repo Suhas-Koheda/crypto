@@ -176,7 +176,7 @@ def _parse_hashcat_output(output: str, elapsed: float) -> dict:
 # ── Step 3: Simulate without Hashcat (CPU estimation) ─────────────────────────
 
 def simulate_attack_cpu(algorithm: str, preset: str = "medium",
-                        duration_seconds: int = 10) -> dict:
+                        duration_seconds: int = 10, custom_params: dict = None) -> dict:
     """
     Simulate an attack by trying many hashes using Python (CPU-only).
     Useful when Hashcat is not installed.
@@ -194,15 +194,20 @@ def simulate_attack_cpu(algorithm: str, preset: str = "medium",
 
     # Pick hash function
     if algorithm == "bcrypt":
-        target_hash = bcrypt_auth.hash_password("password123", rounds=12)
+        bcrypt_rounds = {"low": 10, "medium": 12, "high": 14}.get(preset, 12)
+        target_hash = bcrypt_auth.hash_password("password123", rounds=bcrypt_rounds)
         fn = lambda p: bcrypt_auth.verify_password(p, target_hash)
     elif algorithm == "argon2id":
-        params = argon2_auth.PRESETS[preset]
+        params = custom_params if custom_params else argon2_auth.PRESETS[preset]
         target_hash = argon2_auth.hash_password("password123", **params)
         fn = lambda p: argon2_auth.verify_password(p, target_hash, **params)
     elif algorithm == "scrypt":
-        target_hash = scrypt_auth.hash_password("password123", preset=preset)
-        fn = lambda p: scrypt_auth.verify_password(p, target_hash)
+        if custom_params:
+            target_hash = _scrypt_hash("password123", **custom_params)
+            fn = lambda p: _scrypt_verify(p, target_hash, **custom_params)
+        else:
+            target_hash = scrypt_auth.hash_password("password123", preset=preset)
+            fn = lambda p: scrypt_auth.verify_password(p, target_hash)
     else:
         raise ValueError(f"Unknown algorithm: {algorithm}")
 
@@ -222,6 +227,19 @@ def simulate_attack_cpu(algorithm: str, preset: str = "medium",
         "hashes_per_second": round(hps, 2),
         "mode": "CPU simulation",
     }
+
+def _scrypt_hash(password, **kw):
+    import hashlib, os as _os
+    salt = _os.urandom(32)
+    dk = hashlib.scrypt(password.encode(), salt=salt, **kw, dklen=64, maxmem=0x7fffffff)
+    return salt.hex() + "$" + dk.hex()
+
+def _scrypt_verify(password, stored, **kw):
+    import hashlib, hmac
+    salt_hex, dk_hex = stored.split("$")
+    salt = bytes.fromhex(salt_hex)
+    dk = hashlib.scrypt(password.encode(), salt=salt, **kw, dklen=64, maxmem=0x7fffffff)
+    return hmac.compare_digest(dk.hex(), dk_hex)
 
 
 # ── Step 4: Print attack comparison ───────────────────────────────────────────
@@ -267,12 +285,36 @@ if __name__ == "__main__":
 
     if args.cpu_sim:
         results = []
+        # Standard presets
         for alg in ["bcrypt", "argon2id", "scrypt"]:
             for preset in ["low", "medium", "high"]:
                 r = simulate_attack_cpu(alg, preset, duration_seconds=args.duration)
                 r["algorithm"] = f"{alg} ({preset})"
                 results.append(r)
                 print(f"  → {r['hashes_per_second']} H/s")
+        
+        # Optimized configs
+        opt_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "benchmark", "optimal_params.json")
+        if os.path.exists(opt_path):
+            with open(opt_path) as f:
+                opt = json.load(f)
+            
+            print("\n[CPU Sim] Running RECOMMENDED configs...")
+            
+            # Argon2 Recommended
+            a_cfg = opt["argon2id_recommended"]["config"]
+            r_a = simulate_attack_cpu("argon2id", duration_seconds=args.duration, custom_params=a_cfg)
+            r_a["algorithm"] = "Argon2id (recommended)"
+            results.append(r_a)
+            print(f"  → {r_a['hashes_per_second']} H/s")
+
+            # scrypt Recommended
+            s_cfg = opt["scrypt_recommended"]["config"]
+            r_s = simulate_attack_cpu("scrypt", duration_seconds=args.duration, custom_params=s_cfg)
+            r_s["algorithm"] = "scrypt (recommended)"
+            results.append(r_s)
+            print(f"  → {r_s['hashes_per_second']} H/s")
+
         print_attack_comparison(results)
 
     else:

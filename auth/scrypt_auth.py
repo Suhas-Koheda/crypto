@@ -51,6 +51,7 @@ def hash_password(password: str, preset: str = "medium", **kwargs) -> str:
         r=params["r"],
         p=params["p"],
         dklen=KEY_LEN,
+        maxmem=0x7fffffff,
     )
     # Store: preset$salt_hex$dk_hex  so we can re-derive with same params
     preset_label = preset if not kwargs else "custom"
@@ -84,6 +85,7 @@ def verify_password(password: str, stored: str, **kwargs) -> bool:
             r=params["r"],
             p=params["p"],
             dklen=KEY_LEN,
+            maxmem=0x7fffffff,
         )
         # Constant-time comparison to prevent timing attacks
         return hmac_compare(dk.hex(), dk_hex)

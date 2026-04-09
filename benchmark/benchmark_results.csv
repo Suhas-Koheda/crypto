@@ -1,0 +1,12 @@
+algorithm,preset,avg_hash_ms,avg_verify_ms,avg_total_ms,peak_memory_mb,iterations
+bcrypt (rounds=10),rounds=10,59.49,58.84,118.33,0.0,5
+bcrypt (rounds=12),rounds=12,235.93,235.46,471.39,0.0,5
+bcrypt (rounds=14),rounds=14,948.13,950.77,1898.9,0.0,5
+Argon2id (low),low,36.02,35.01,71.03,0.013,5
+Argon2id (medium),medium,131.36,119.47,250.83,0.001,5
+Argon2id (high),high,250.84,234.48,485.33,0.001,5
+Argon2id (ultra),ultra,651.25,675.17,1326.42,0.001,5
+scrypt (low),low,47.25,46.04,93.29,0.001,5
+scrypt (medium),medium,197.1,198.09,395.18,0.001,5
+scrypt (high),high,379.14,370.63,749.77,0.001,5
+scrypt (ultra),ultra,748.28,717.47,1465.75,0.001,5
