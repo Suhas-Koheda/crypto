@@ -30,6 +30,38 @@ champ-project/
 
 ---
 
+## Running with Docker (Recommended)
+
+The entire CHAMP laboratory (Flask API + PostgreSQL Database) can be launched instantly using Docker Compose. This ensures all dependencies and the database schema are correctly configured.
+
+### 1. Launch the Stack
+```bash
+# Build and start the containers in the background
+docker-compose up --build -d
+```
+
+### 2. Verify the Installation
+- **Web Dashboard:** Open [http://localhost:5000](http://localhost:5000) in your browser.
+- **Health Check:** `curl http://localhost:5000/api/health`
+- **Database:** The database is available on `localhost:5434` for external database tools.
+
+### 3. Management Commands
+```bash
+# View real-time logs for the API
+docker-compose logs -f api
+
+# Stop all services
+docker-compose stop
+
+# Remove containers (keeps database data)
+docker-compose down
+
+# Reset everything (wipes database volumes)
+docker-compose down -v
+```
+
+---
+
 ## Week-by-Week Setup
 
 ### Week 1–2: Install & Test
@@ -104,13 +136,12 @@ python attack_sim/hashcat_runner.py --wordlist /usr/share/wordlists/rockyou.txt
 # Find optimal parameters for your machine
 python benchmark/optimize_params.py
 
-# Start Flask API (without Docker)
+# Start Flask API (requires local PostgreSQL)
 python app.py
 # Open: http://localhost:5000
 
-# OR with Docker
-docker-compose up --build
-# Open: http://localhost:5000
+# OR use Docker (recommended for consistency)
+# See "Running with Docker" section above.
 ```
 
 ---
